@@ -6,14 +6,44 @@
 import UIKit
 import Nuke
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UITableViewDataSource {
+    
+    private var posts: [Post] = []
 
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return posts.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        // Create the cell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "PostCell", for: indexPath) as! PostCell
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
+            // Configure the cell (i.e. update UI elements like labels, image views, etc.)
+            // Get the row where the cell will be placed using the `row` property on the passed in `indexPath` (i.e., `indexPath.row`)
+        let post = posts[indexPath.row]
+        let postImages = post.photos
+        if postImages.count != 0{
+            //TODO change to have a for loop for multiple images
+            let postImagePath = postImages.first?.originalSize.url
+            Nuke.loadImage(with: postImagePath!, into: cell.PostImageView)
+        }
+//        cell.textLabel?.text = "Row \(indexPath.row)"
+//        cell.textLabel?.text = post.summary
+        cell.PostCaption?.text = post.caption
+
+            // Return the cell for use in the respective table view row
+            return cell
+
+    }
+    
+
+    @IBOutlet weak var tableView: UITableView!
 
         
+    override func viewDidLoad() {
+        super.viewDidLoad()
         fetchPosts()
+        tableView.dataSource = self
     }
 
 
@@ -42,6 +72,9 @@ class ViewController: UIViewController {
                 DispatchQueue.main.async { [weak self] in
 
                     let posts = blog.response.posts
+                    self?.posts = posts
+                    self?.tableView.reloadData()
+
 
 
                     print("✅ We got \(posts.count) posts!")
